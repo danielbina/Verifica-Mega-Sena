@@ -15,8 +15,8 @@
 <h2>Insira os números do seu jogo:</h2>
 
 <form action="{{ url_for('cadastrar') }}" method="POST">
-    <label for="numeros">Números (separados por vírgula):</label>
-    <input type="text" id="numeros" name="numeros" required placeholder="Exemplo: 10, 20, 30, 40, 50, 60">
+    <label for="numeros">Números (separados por espaço):</label>
+    <input type="text" id="numeros" name="numeros" required placeholder="Exemplo: 10 20 30 40 50 60">
     
     <input type="submit" value="Cadastrar Jogo">
 </form>

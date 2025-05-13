@@ -7,7 +7,7 @@ def conectar_banco():
     return mysql.connector.connect(
         host="localhost",
         user="root",
-        password="",
+        password="danbina21",
         database="megasena"
     )
 
@@ -54,14 +54,15 @@ def verificar():
         sorteados = request.form["sorteados"]
 
         try:
-            # Converte os números sorteados para lista de inteiros
-            # Divida a string pela vírgula e converta cada valor para int
+            
+            # Divide a string pela vírgula e converte cada valor para int
             numeros_sorteados = [int(n.strip()) for n in sorteados.split(",")]
 
-            # Validação: verificar se são 6 números e se estão no intervalo correto
+            # Verifica Quantidade de números
             if len(numeros_sorteados) != 6:
                 raise ValueError("Erro: insira 6 números válidos entre 1 e 60 separados por vírgula.")
             
+            # Verifica se está entre 1 e 60
             for n in numeros_sorteados:
                 if n < 1 or n > 60:
                     raise ValueError("Erro: insira 6 números válidos entre 1 e 60 separados por vírgula.")
@@ -80,11 +81,11 @@ def verificar():
                 acertos = len(set(numeros_jogo) & set(numeros_sorteados))
 
                 if acertos == 6:
-                    status = "SENA"
+                    status = "SENA - Você está milionário"
                 elif acertos == 5:
-                    status = "QUINA"
+                    status = "QUINA - Você ganhou uma boa grana"
                 elif acertos == 4:
-                    status = "QUADRA"
+                    status = "QUADRA - Você ganhou um trocado"
                 else:
                     status = f"{acertos} acertos"
 
