@@ -1,171 +1,103 @@
+from flask import Flask, render_template, request, redirect, url_for
 import mysql.connector
 
-# Função para conectar ao banco de dados
-# Retorna um objeto de conexão
+app = Flask(__name__)
 
 def conectar_banco():
     return mysql.connector.connect(
-        host="localhost",  
-        user="root",  
-        password="",  
-        database="megasena"  
+        host="localhost",
+        user="root",
+        password="",
+        database="megasena"
     )
 
-# Função para criar a tabela de jogos se não existir
-
-def criar_tabela():
+@app.route("/")
+def index():
     conexao = conectar_banco()
     cursor = conexao.cursor()
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS jogos (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            numeros VARCHAR(255) NOT NULL
-        )
-        """
-    )
-    conexao.close()
-
-# Função para cadastrar um novo jogo
-
-def cadastrar_jogo():
-    print("Cadastro de Novo Jogo")
-    while True:
-        try:
-            qtd_numeros = int(input("Quantos números terá o jogo? (6, 7 ou 8): "))
-            
-            if qtd_numeros not in [6, 7, 8]:
-                print("Quantidade inválida! Escolha entre 6, 7 ou 8.")
-                continue
-            
-            break
-        except ValueError:
-            print("Por favor, insira um número válido.")
-    
-    while True:
-        try:
-            numeros = input(f"Digite os {qtd_numeros} números do jogo separados por vírgula: ").strip()
-            numeros = list(map(int, numeros.split(",")))
-            
-            if len(numeros) != qtd_numeros:
-                print("A quantidade de números deve ser igual ao escolhido.")
-                continue
-            
-            for n in numeros:
-                if n < 1 or n > 60:
-                    print("Os números devem estar entre 1 e 60.")
-                    continue
-            
-            break
-        except ValueError:
-            print("Por favor, insira apenas números separados por vírgula.")
-    
-    # Conecta ao banco e insere os números
-    conexao = conectar_banco()
-    cursor = conexao.cursor()
-    cursor.execute("INSERT INTO jogos (numeros) VALUES (%s)", (" ".join(map(str, numeros)),))
-    conexao.commit()
-    conexao.close()
-    print("Jogo cadastrado com sucesso!")
-
-# Função para deletar um jogo do banco
-
-def deletar_jogo():
-    conexao = conectar_banco()
-    cursor = conexao.cursor()
-    
     cursor.execute("SELECT id, numeros FROM jogos")
     jogos = cursor.fetchall()
     conexao.close()
-    
-    if not jogos:
-        print("Nenhum jogo cadastrado ainda!")
-        return
-    
-    for jogo in jogos:
-        id_jogo, numeros = jogo
-        print(f"ID: {id_jogo} - Números: {numeros}")
-    
-    try:
-        id_jogo = int(input("\nDigite o ID do jogo que deseja deletar ou 0 para sair: "))
-        
-        if id_jogo == 0:
-            return
-        
+    return render_template("index.html", jogos=jogos)
+
+@app.route("/cadastrar", methods=["GET", "POST"])
+def cadastrar():
+    if request.method == "POST":
+        numeros = request.form["numeros"]
+
         conexao = conectar_banco()
         cursor = conexao.cursor()
-        cursor.execute("DELETE FROM jogos WHERE id = %s", (id_jogo,))
+        cursor.execute("INSERT INTO jogos (numeros) VALUES (%s)", (numeros,))
         conexao.commit()
         conexao.close()
-        print("Jogo deletado com sucesso!")
-    except ValueError:
-        print("Por favor, insira um ID válido.")
 
-# Função para verificar quais jogos acertaram os números sorteados
+        return redirect(url_for("index"))
 
-def verificar_jogos():
+    return render_template("cadastrar.html")
+
+@app.route("/deletar/<int:id>")
+def deletar(id):
     conexao = conectar_banco()
     cursor = conexao.cursor()
-    cursor.execute("SELECT id, numeros FROM jogos")
-    jogos = cursor.fetchall()
+    cursor.execute("DELETE FROM jogos WHERE id = %s", (id,))
+    conexao.commit()
     conexao.close()
-    
-    if not jogos:
-        print("Nenhum jogo cadastrado ainda!")
-        return
-    
-    try:
-        sorteados = input("Digite os números sorteados separados por vírgula: ").strip()
-        sorteados = list(map(int, sorteados.split(",")))
-        
-        if len(sorteados) != 6:
-            print("Os números sorteados devem ser exatamente 6.")
-            return
-        
-        for n in sorteados:
-            if n < 1 or n > 60:
-                print("Os números sorteados devem estar entre 1 e 60.")
-                return
-    except ValueError:
-        print("Por favor, insira apenas números separados por vírgula.")
-        return
-    
-    for jogo in jogos:
-        id_jogo, numeros = jogo
-        numeros = list(map(int, numeros.split()))
-        acertos = len(set(numeros) & set(sorteados))
-        
-        if acertos == 6:
-            print(f"Jogo {id_jogo}: {numeros} - Acertou a SENA")
-        elif acertos == 5:
-            print(f"Jogo {id_jogo}: {numeros} - Acertou a QUINA!")
-        elif acertos == 4:
-            print(f"Jogo {id_jogo}: {numeros} - Acertou a QUADRA")
-        else:
-            print(f"Jogo {id_jogo}: {numeros} - Acertou {acertos} números.")
+    return redirect(url_for("index"))
 
-# Função principal do menu do sistema
+@app.route("/verificar", methods=["GET", "POST"])
 
-def menu():
-    criar_tabela()
-    while True:
-        print("\n==== Mega Sena ====")
-        print("1. Cadastrar novo jogo")
-        print("2. Verificar jogos")
-        print("3. Deletar jogo")
-        print("4. Sair")
-        opcao = input("Escolha uma opção: ")
-        
-        if opcao == "1":
-            cadastrar_jogo()
-        elif opcao == "2":
-            verificar_jogos()
-        elif opcao == "3":
-            deletar_jogo()
-        elif opcao == "4":
-            print("Encerrando o programa. Boa sorte!")
-            break
-        else:
-            print("Opção inválida! Tente novamente.")
+def verificar():
+    resultados = []
+    erro = None  # Variável para armazenar a mensagem de erro
 
-menu()
+    if request.method == "POST":
+        sorteados = request.form["sorteados"]
+
+        try:
+            # Converte os números sorteados para lista de inteiros
+            # Divida a string pela vírgula e converta cada valor para int
+            numeros_sorteados = [int(n.strip()) for n in sorteados.split(",")]
+
+            # Validação: verificar se são 6 números e se estão no intervalo correto
+            if len(numeros_sorteados) != 6:
+                raise ValueError("Erro: insira 6 números válidos entre 1 e 60 separados por vírgula.")
+            
+            for n in numeros_sorteados:
+                if n < 1 or n > 60:
+                    raise ValueError("Erro: insira 6 números válidos entre 1 e 60 separados por vírgula.")
+
+            # Se os números forem válidos, consulta os jogos cadastrados no banco
+            conexao = conectar_banco()
+            cursor = conexao.cursor()
+            cursor.execute("SELECT id, numeros FROM jogos")
+            jogos = cursor.fetchall()
+            conexao.close()
+
+            # Verifica os acertos nos jogos
+            for jogo in jogos:
+                id_jogo, numeros = jogo
+                numeros_jogo = list(map(int, numeros.split()))
+                acertos = len(set(numeros_jogo) & set(numeros_sorteados))
+
+                if acertos == 6:
+                    status = "SENA"
+                elif acertos == 5:
+                    status = "QUINA"
+                elif acertos == 4:
+                    status = "QUADRA"
+                else:
+                    status = f"{acertos} acertos"
+
+                resultados.append((id_jogo, numeros_jogo, status))
+
+        except ValueError as e:
+            # Se ocorrer algum erro, armazenamos a mensagem de erro
+            erro = str(e)
+            resultados = []
+
+    return render_template("verificar.html", resultados=resultados, erro=erro)
+
+
+
+if __name__ == "__main__":
+    app.run(debug=True)

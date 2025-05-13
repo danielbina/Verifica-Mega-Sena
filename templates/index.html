@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confere Jogo - Mega Sena</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>Bem-vindo ao Confere Jogo - Mega Sena</h1>
+</header>
+
+<h2>Jogos Cadastrados</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Números</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for jogo in jogos %}
+        <tr>
+            <td>{{ jogo[0] }}</td>
+            <td>{{ jogo[1] }}</td>
+            <td><a href="{{ url_for('deletar', id=jogo[0]) }}">Deletar</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div>
+    <a href="{{ url_for('cadastrar') }}">
+        <button>Cadastrar Novo Jogo</button>
+    </a>
+    <a href="{{ url_for('verificar') }}">
+        <button>Verificar Jogos</button>
+    </a>
+</div>
+
+</body>
+</html>

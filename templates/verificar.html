@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Jogos</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>Verificar Jogos</h1>
+</header>
+
+<h2>Digite os números sorteados:</h2>
+
+<form action="{{ url_for('verificar') }}" method="POST">
+    <label for="sorteados">Números Sorteados (separados por vírgula):</label>
+    <input type="text" id="sorteados" name="sorteados" required placeholder="Exemplo: 1, 2, 3, 4, 5, 6">
+    
+    <input type="submit" value="Verificar">
+</form>
+
+{% if erro %}
+    <div class="error-message">
+        <p>{{ erro }}</p>
+    </div>
+{% endif %}
+
+{% if resultados %}
+    <h2>Resultados:</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID do Jogo</th>
+                <th>Números do Jogo</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resultado in resultados %}
+                <tr>
+                    <td>{{ resultado[0] }}</td>
+                    <td>{{ resultado[1] | join(", ") }}</td>
+                    <td>{{ resultado[2] }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+<div>
+    <a href="{{ url_for('index') }}">
+        <button>Voltar para a Lista de Jogos</button>
+    </a>
+</div>
+
+</body>
+</html>

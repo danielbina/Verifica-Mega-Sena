@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Novo Jogo</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>Cadastrar Novo Jogo</h1>
+</header>
+
+<h2>Insira os números do seu jogo:</h2>
+
+<form action="{{ url_for('cadastrar') }}" method="POST">
+    <label for="numeros">Números (separados por vírgula):</label>
+    <input type="text" id="numeros" name="numeros" required placeholder="Exemplo: 10, 20, 30, 40, 50, 60">
+    
+    <input type="submit" value="Cadastrar Jogo">
+</form>
+
+<div>
+    <a href="{{ url_for('index') }}">
+        <button>Voltar para a Lista de Jogos</button>
+    </a>
+</div>
+
+</body>
+</html>
